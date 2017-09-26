@@ -1,4 +1,4 @@
-#!python_path required
+#!python3_path required
 import numpy as np
 import re
 from Bio import pairwise2 
@@ -75,19 +75,6 @@ def main():
 		setAB = bothSets(args.file1, args.file2)
 		setAB.compare()
 		setAB.get_non_redundant_common()
-
-		# homer_filter(setAB.set1.file_path, setAB.set1.unique, setAB.set1.out_file)
-		# scan_againts_known_motifs(setAB.set1.out_file, setAB.set1.name, args.cpu_num, args.pval)
-		# # homer_filter(setAB.set2.file_path, setAB.set2_unique, setAB.set2.out_file)
-		# # scan_againts_known_motifs(setAB.set2.out_file, setAB.set2.name, args.cpu_num, args.pval)
-
-
-		# # homer_filter(setB.file_path, setAB.setB_unique, setB.out_file)
-		# # scan_againts_known_motifs(setB.out_file, setB.name, args.cpu_num)
-
-		# # homer_filter(setA.file_path, setAB.setA_nr, setAB.out_file)
-		# # homer_filter(setB.file_path, setAB.setB_nr, setAB.out_file, openOption = "a")
-		# # scan_againts_known_motifs(setAB.out_file, setAB.out_file, args.cpu_num)
 
 		get_results(setAB.set1, args.cpu_num, args.pval)
 		get_results(setAB.set2, args.cpu_num, args.pval)
