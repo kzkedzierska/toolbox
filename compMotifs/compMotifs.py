@@ -49,8 +49,9 @@ def main():
 	### Check options
 	# TODO: add creating a dist dict from matrix
 	if args.dist_matrix is not None:
-		#distDic.py args.dist_matrix
-		pass
+		run distDic.py args.dist_matrix args.out_path
+		dna_dist_file = "/".join([args.out_path, ".".join([name, 'npy'])])
+		dna_dist = np.load(dna_dist_file).item()
 
 	if args.dist_dict is None:
 		dna_dist = np.load('/'.join([script_path, "nuc.npy"])).item()
