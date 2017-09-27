@@ -16,7 +16,7 @@ script_path = "script_path required"
 def main():
 	import argparse
 
-	parser = argparse.ArgumentParser(description='Compare motifs from homer results files and keeps non-redundant ones or, if run in compare mode, compares the motifs from two result files and outputs: pairs, and uniques motifs from each file.')
+	parser = argparse.ArgumentParser(description='Compare motifs from homer results files and keeps non-redundant ones or, if run in compare mode, compares the motifs from two result files and outputs: pairs, and uniques motifs from each file. The comparison and reduction is based on alignment with distance matrix (nuc4.4) based on IUPAC ambiguous nucleotide code.')
 	parser.add_argument("file1", type=str, help="homer output file with motifs from condition A")
 	parser.add_argument("-f", "--file2", action="store", help = "homer output file with motifs from condition B")
 	parser.add_argument("-o", "--out_path", action="store", default = ".", help = "Output directory, default: .")
@@ -56,7 +56,15 @@ def main():
 	#again, out_path is a class variable since it's the same for all objects
 	motifSet.parameters = parameters
 
-		
+	"""
+	here the program is actually run, 
+	if mode compare:
+		create instance of bothSets class
+		run the actual comparison method
+		extract the non redundant ones from common set
+		write all results and scan them against known motifs
+	"""
+
 	if args.file2 is not None:
 		setAB = bothSets(args.file1, args.file2)
 		setAB.compare()
@@ -66,6 +74,12 @@ def main():
 		get_results(setAB.set2, args.cpu_num, args.pval)
 		get_results(setAB, args.cpu_num, args.pval, mode = 'duo')
 		
+	"""
+	if mode reduce:
+		create instance of motifSet class
+		reduce 
+		write result
+	"""
 	else:
 		setA = motifSet(args.file1)
 		setA_unique = setA.reduce() 
