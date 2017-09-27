@@ -32,7 +32,7 @@ def main():
 
 
 	### Check options
-	# TODO: add creating a dist dict from matrix
+	# TODO: check if creating a dist dict from matrix actually works
 	if args.dist_matrix is not None:
 		run distDic.py args.dist_matrix args.out_path
 		dna_dist_file = "/".join([args.out_path, ".".join([name, 'npy'])])
@@ -75,7 +75,8 @@ class motifSet:
 	"""
 	everything that needs to be done for reduce mode of this script and preprocessing the sets for compare
 	"""
-	pattern = re.compile('.*[^/]/([a-zA-Z0-9]*)\.[a-zA-Z0-9]*')
+	#pattern assumes that file name only consists of letters, numbers and underscore. Dot is considered as end of file name. 
+	pattern = re.compile('.*[^/]/([a-zA-Z0-9_]*)\.[a-zA-Z0-9\._]*')
 	parameters = {}
 	out_path = ''
 
@@ -208,12 +209,14 @@ def scan_againts_known_motifs(input_file, output_directory, cpus, pvalue):
 #This should be a class method, TODO: make it one
 def get_results(motif_set, cpu, p_val, mode = ''):
 	if mode != 'duo':
+		out_dir_homer = "/".join([motif_set.out_path, motif_set.name])
 		homer_filter(motif_set.file_path, motif_set.unique, motif_set.out_file)
-		scan_againts_known_motifs(motif_set.out_file, motif_set.name, cpu, p_val)
+		scan_againts_known_motifs(motif_set.out_file, out_dir_homer, cpu, p_val)
 	else:
+		out_dir_homer = "/".join([motif_set.set1.out_path, motif_set.name])
 		homer_filter(motif_set.set1.file_path, motif_set.set1_nr, motif_set.out_file)
 		homer_filter(motif_set.set2.file_path, motif_set.set2_nr, motif_set.out_file, openOption = "a")
-		scan_againts_known_motifs(motif_set.out_file, motif_set.name, cpu, p_val)
+		scan_againts_known_motifs(motif_set.out_file, out_dir_homer, cpu, p_val)
 
 if __name__=='__main__': 
     main()
