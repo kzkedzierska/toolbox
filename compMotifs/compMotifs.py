@@ -18,30 +18,15 @@ def main():
 
 	parser = argparse.ArgumentParser(description='Compare motifs from homer results files and keeps non-redundant ones or, if run in compare mode, compares the motifs from two result files and outputs: pairs, and uniques motifs from each file.')
 	parser.add_argument("file1", type=str, help="homer output file with motifs from condition A")
-	parser.add_argument("-f", "--file2", 
-						action="store", 
-						help = "homer output file with motifs from condition B")
-	parser.add_argument("-o", "--out_path",
-						action="store", default = ".", help = "Output directory, default: .")
-	parser.add_argument("-t", "--threshold", 
-						action="store", default = 0.7, 
-						help="similarity threshold, default: 0.7")
-	parser.add_argument("-g", "--gap_penalty", 
-						action="store", default = -2, 
-						help="Gap penalty for the local alignment, gap_pen <= 0, default: -2")
-	parser.add_argument("-e", "--ext_gap_penalty", 
-						action="store", default = -2, 
-						help="Penalty for the extension of the gap in the alignment, gap_pen <= ext_gap_pen <= 0, default: -2")
-	parser.add_argument("-p", "--pval", 
-						action="store", default = '1e-50', 
-						help="discard all the motifs from final result html file above this p-value threshold, default: 1e-50")
-	parser.add_argument("-c", "--cpu_num", 
-						action="store", default = 1, 
-						help="Number of threads passed to homer when scanning the motifs against the known motifs database")
-	parser.add_argument("-m", "--dist_matrix",
-						action="store", help = "Distance matrix in csv file format")
-	parser.add_argument("-d", "--dist_dict",
-						action="store", help = "Distance dictionary in npy file format")
+	parser.add_argument("-f", "--file2", action="store", help = "homer output file with motifs from condition B")
+	parser.add_argument("-o", "--out_path", action="store", default = ".", help = "Output directory, default: .")
+	parser.add_argument("-t", "--threshold", action="store", default = 0.7, help="similarity threshold, default: 0.7")
+	parser.add_argument("-g", "--gap_penalty", action="store", default = -2, help="Gap penalty for the local alignment, gap_pen <= 0, default: -2")
+	parser.add_argument("-e", "--ext_gap_penalty", action="store", default = -2, help="Penalty for the extension of the gap in the alignment, gap_pen <= ext_gap_pen <= 0, default: -2")
+	parser.add_argument("-p", "--pval", action="store", default = '1e-50', help="discard all the motifs from final result html file above this p-value threshold, default: 1e-50")
+	parser.add_argument("-c", "--cpu_num", action="store", default = 1, help="Number of threads passed to homer when scanning the motifs against the known motifs database")
+	parser.add_argument("-m", "--dist_matrix", action="store", help = "Distance matrix in csv file format")
+	parser.add_argument("-d", "--dist_dict", action="store", help = "Distance dictionary in npy file format")
 
 	args = parser.parse_args()
 
@@ -213,12 +198,8 @@ def align(motif_tuple, aligner_parameters):
 	motifB = Seq(motif_tuple[1], IUPACAmbiguousDNA())
 	motifB_reverse = motifB.reverse_complement()
 	dna_dist, gap_penalty, ext_gap_penalty = aligner_parameters['dna_dist'], aligner_parameters['gap_penalty'], aligner_parameters['ext_gap_penalty']
-	score = pairwise2.align.localds(motifA, motifB, 
-									dna_dist, gap_penalty, 
-									ext_gap_penalty, score_only = True) / min(len(motifA), len(motifB))
-	score_rev = pairwise2.align.localds(motifA, motifB_reverse, 
-										dna_dist, gap_penalty, 
-										ext_gap_penalty, score_only = True) / min(len(motifA), len(motifB_reverse))
+	score = pairwise2.align.localds(motifA, motifB, dna_dist, gap_penalty, ext_gap_penalty, score_only = True) / min(len(motifA), len(motifB))
+	score_rev = pairwise2.align.localds(motifA, motifB_reverse, dna_dist, gap_penalty, ext_gap_penalty, score_only = True) / min(len(motifA), len(motifB_reverse))
 	return score, score_rev
 
 def scan_againts_known_motifs(input_file, output_directory, cpus, pvalue):
