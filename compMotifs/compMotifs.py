@@ -1,4 +1,4 @@
-#!python3_path required
+#!/home/kzk5f/.pyenv/shims/python3
 import numpy as np
 import re
 from Bio import pairwise2 
@@ -16,27 +16,43 @@ script_path = "script_path required"
 def main():
 	import argparse
 
-	parser = argparse.ArgumentParser(description='Compare motifs from homer results files and keeps non-redundant ones or, if run in compare mode, compares the motifs from two result files and outputs: pairs, and uniques motifs from each file. The comparison and reduction is based on alignment with distance matrix (nuc4.4) based on IUPAC ambiguous nucleotide code.')
+	parser = argparse.ArgumentParser(description='Compare motifs from homer results files and keeps non-redundant ones or, if run in compare mode, compares the motifs from two result files and outputs: pairs, and uniques motifs from each file.')
 	parser.add_argument("file1", type=str, help="homer output file with motifs from condition A")
-	parser.add_argument("-f", "--file2", action="store", help = "homer output file with motifs from condition B")
-	parser.add_argument("-o", "--out_path", action="store", default = ".", help = "Output directory, default: .")
-	parser.add_argument("-t", "--threshold", action="store", default = 0.7, help="similarity threshold, default: 0.7")
-	parser.add_argument("-g", "--gap_penalty", action="store", default = -2, help="Gap penalty for the local alignment, gap_pen <= 0, default: -2")
-	parser.add_argument("-e", "--ext_gap_penalty", action="store", default = -2, help="Penalty for the extension of the gap in the alignment, gap_pen <= ext_gap_pen <= 0, default: -2")
-	parser.add_argument("-p", "--pval", action="store", default = '1e-50', help="discard all the motifs from final result html file above this p-value threshold, default: 1e-50")
-	parser.add_argument("-c", "--cpu_num", action="store", default = 1, help="Number of threads passed to homer when scanning the motifs against the known motifs database")
-	parser.add_argument("-m", "--dist_matrix", action="store", help = "Distance matrix in csv file format")
-	parser.add_argument("-d", "--dist_dict", action="store", help = "Distance dictionary in npy file format")
+	parser.add_argument("-f", "--file2", 
+						action="store", 
+						help = "homer output file with motifs from condition B")
+	parser.add_argument("-o", "--out_path",
+						action="store", default = ".", help = "Output directory, default: .")
+	parser.add_argument("-t", "--threshold", 
+						action="store", default = 0.7, 
+						help="similarity threshold, default: 0.7")
+	parser.add_argument("-g", "--gap_penalty", 
+						action="store", default = -2, 
+						help="Gap penalty for the local alignment, gap_pen <= 0, default: -2")
+	parser.add_argument("-e", "--ext_gap_penalty", 
+						action="store", default = -2, 
+						help="Penalty for the extension of the gap in the alignment, gap_pen <= ext_gap_pen <= 0, default: -2")
+	parser.add_argument("-p", "--pval", 
+						action="store", default = '1e-50', 
+						help="discard all the motifs from final result html file above this p-value threshold, default: 1e-50")
+	parser.add_argument("-c", "--cpu_num", 
+						action="store", default = 1, 
+						help="Number of threads passed to homer when scanning the motifs against the known motifs database")
+	parser.add_argument("-m", "--dist_matrix",
+						action="store", help = "Distance matrix in csv file format")
+	parser.add_argument("-d", "--dist_dict",
+						action="store", help = "Distance dictionary in npy file format")
 
 	args = parser.parse_args()
 
+	if not os.path.exists(args.out_path):
+		os.makedirs(args.out_path)
 
 	### Check options
-	# TODO: check if creating a dist dict from matrix actually works
+	# TODO: add creating a dist dict from matrix
 	if args.dist_matrix is not None:
-		run distDic.py args.dist_matrix args.out_path
-		dna_dist_file = "/".join([args.out_path, ".".join([name, 'npy'])])
-		dna_dist = np.load(dna_dist_file).item()
+		#distDic.py args.dist_matrix
+		pass
 
 	if args.dist_dict is None:
 		dna_dist = np.load('/'.join([script_path, "nuc.npy"])).item()
@@ -56,30 +72,29 @@ def main():
 	#again, out_path is a class variable since it's the same for all objects
 	motifSet.parameters = parameters
 
-	"""
-	here the program is actually run, 
-	if mode compare:
-		create instance of bothSets class
-		run the actual comparison method
-		extract the non redundant ones from common set
-		write all results and scan them against known motifs
-	"""
-
+		
 	if args.file2 is not None:
 		setAB = bothSets(args.file1, args.file2)
 		setAB.compare()
 		setAB.get_non_redundant_common()
 
+		# homer_filter(setAB.set1.file_path, setAB.set1.unique, setAB.set1.out_file)
+		# scan_againts_known_motifs(setAB.set1.out_file, setAB.set1.name, args.cpu_num, args.pval)
+		# # homer_filter(setAB.set2.file_path, setAB.set2_unique, setAB.set2.out_file)
+		# # scan_againts_known_motifs(setAB.set2.out_file, setAB.set2.name, args.cpu_num, args.pval)
+
+
+		# # homer_filter(setB.file_path, setAB.setB_unique, setB.out_file)
+		# # scan_againts_known_motifs(setB.out_file, setB.name, args.cpu_num)
+
+		# # homer_filter(setA.file_path, setAB.setA_nr, setAB.out_file)
+		# # homer_filter(setB.file_path, setAB.setB_nr, setAB.out_file, openOption = "a")
+		# # scan_againts_known_motifs(setAB.out_file, setAB.out_file, args.cpu_num)
+
 		get_results(setAB.set1, args.cpu_num, args.pval)
 		get_results(setAB.set2, args.cpu_num, args.pval)
 		get_results(setAB, args.cpu_num, args.pval, mode = 'duo')
 		
-	"""
-	if mode reduce:
-		create instance of motifSet class
-		reduce 
-		write result
-	"""
 	else:
 		setA = motifSet(args.file1)
 		setA_unique = setA.reduce() 
@@ -89,7 +104,6 @@ class motifSet:
 	"""
 	everything that needs to be done for reduce mode of this script and preprocessing the sets for compare
 	"""
-	#pattern assumes that file name only consists of letters, numbers and underscore. Dot is considered as end of file name. 
 	pattern = re.compile('.*[^/]/([a-zA-Z0-9_]*)\.[a-zA-Z0-9\._]*')
 	parameters = {}
 	out_path = ''
@@ -213,8 +227,12 @@ def align(motif_tuple, aligner_parameters):
 	motifB = Seq(motif_tuple[1], IUPACAmbiguousDNA())
 	motifB_reverse = motifB.reverse_complement()
 	dna_dist, gap_penalty, ext_gap_penalty = aligner_parameters['dna_dist'], aligner_parameters['gap_penalty'], aligner_parameters['ext_gap_penalty']
-	score = pairwise2.align.localds(motifA, motifB, dna_dist, gap_penalty, ext_gap_penalty, score_only = True) / min(len(motifA), len(motifB))
-	score_rev = pairwise2.align.localds(motifA, motifB_reverse, dna_dist, gap_penalty, ext_gap_penalty, score_only = True) / min(len(motifA), len(motifB_reverse))
+	score = pairwise2.align.localds(motifA, motifB, 
+									dna_dist, gap_penalty, 
+									ext_gap_penalty, score_only = True) / min(len(motifA), len(motifB))
+	score_rev = pairwise2.align.localds(motifA, motifB_reverse, 
+										dna_dist, gap_penalty, 
+										ext_gap_penalty, score_only = True) / min(len(motifA), len(motifB_reverse))
 	return score, score_rev
 
 def scan_againts_known_motifs(input_file, output_directory, cpus, pvalue):

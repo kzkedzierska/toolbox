@@ -1,10 +1,9 @@
 #!bin/bash
-
 #===============================================
-#decription: 	config file for compMotifs.py
-#author:		Katarzyna Kedzierska
-#date:			September 26th, 2017
-#usage:			bash config.sh
+#decription:    config file for compMotifs.py
+#author:        Katarzyna Kedzierska
+#date:          September 26th, 2017
+#usage:         bash config.sh
 #===============================================
 
 
@@ -19,7 +18,7 @@ usage()
     echo -e "Usage: 
     bash config.sh
 
-    Configures compMotifs.py script. Only needs to run once. Needs to be run from the directory it is in!"
+    Configures compMotifs.py script. Only needs to be run once from the directory it is in!"
 }  
 
 usage_and_exit()
@@ -42,9 +41,9 @@ fi
 
 ### Checking for the necessary packages
 for f in numpy re Bio itertools os; do
-	if python -c "import package_name" &> /dev/null; 
+    if python -c "import package_name" &> /dev/null; 
         then
-	else
-		error 'Package' $f 'is not installed.'
-	fi
+    else
+        error 'Package' $f 'is not installed.'
+    fi
 
