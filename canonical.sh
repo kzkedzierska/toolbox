@@ -17,9 +17,9 @@ else
     INPUT=$1
 fi
 cat $INPUT|
-    awk -v FS="\t" '$3 ~ "exon" && $9 ~ /transcript_status "KNOWN"/' | 
-        sed 's/gene_id.*transcript_id "\([^"]*\)".*gene_name "\([^"]*\)".*/\1\t\2/g' | 
-            cut -f1,4,5,9,10 | 
+    awk -v FS="\t" '$3 ~ "exon"' | 
+        sed 's/gene_id.*transcript_id "\([^"]*\)".*gene_name "\([^"]*\)"; transcript_type "\([^"]*\).*/\1\t\2\t\3/g' | 
+            cut -f1,4,5,9- | 
                 awk \
 'BEGIN {
     lenone=0
@@ -29,27 +29,34 @@ cat $INPUT|
 
 {
     if (gene==$5 && t1==$4) {
+        #add exons to transcript length
         longest[length(longest)+1] = $0;
         lenone+=$3-$2
     }
     else if (gene==$5 && t1!=$4) {
         if (t2!=$4) {
-            if (lensecond > lenone > 0) {
+            #print t1, typelong, lenone, t2, typesec, lensecond
+            if ((lensecond > lenone > 0 && typelong != "protein_coding") || (lensecond > lenone > 0 && typelong == typesec) || (typelong != "protein_coding" && typesec == "protein_coding")) {
+                #if have two transcript and encountered third, decide which stays as the longest: protein_coding one or the longest one if both or neither are protein_coding
                 delete longest
+                t1=t2
+                typelong=typesec
+                lenone=lensecond
                 for(i=1; i<length(second)+1; i++){
                     longest[i]=second[i]
                 }
             }
             delete second;
-            lensecond=0;
-            second[1] = $0;
-            lensecond+=$3-$2
+            second[1]=$0;
+            lensecond=$3-$2
             t2=$4
+            typesec=$6
         }
 
         else if (t2==$4) {
             if (lensecond==0) {
-                second[1] = $0;
+                second[1]=$0;
+                typesec=$6
             }
             else {
                 second[length(second)+1] = $0;
@@ -59,16 +66,13 @@ cat $INPUT|
         
     }
     else {
-        if (lensecond > lenone > 0) {
-            delete longest
+        if ((lensecond > lenone > 0 && typelong != "protein_coding") || (lensecond > lenone > 0 && typelong == typesec) || (typelong != "protein_coding" && typesec == "protein_coding")) {
+            #if have two transcript and moved to another gene, decide which stays as the longest: protein_coding one or the longest one if both or neither are protein_coding
             for(i=1; i<length(second)+1; i++){
-                longest[i]=second[i]
+                print second[i]
             }
         }
-        else if (lensecond == lenone && lenone != 0) {
-                print "Problem for gene: "gene" and transcripts: "t1, t2
-        }
-        if (lenone > 0) {
+        else if (lenone > 0) {
             for(i=1; i<length(longest)+1; i++) {
                 print longest[i]
             }
@@ -81,13 +85,21 @@ cat $INPUT|
         lensecond=0;
         longest[1]=$0;
         lenone=$3-$2;
+        typelong=$6;
+        typesec="";
     }
 }
 
 END {
-    if (lenone > 0) {
-            for(i=1; i<length(longest)+1; i++) {
-                print longest[i]
-            }
+    if ((lensecond > lenone > 0 && typelong != "protein_coding") || (lensecond > lenone > 0 && typelong == typesec) || (typelong != "protein_coding" && typesec == "protein_coding")) {
+        #if have two transcript and moved to the end of a gene, decide which stays as the longest: protein_coding one or the longest one if both or neither are protein_coding
+        for(i=1; i<length(second)+1; i++){
+            print second[i]
         }
-}'
+    }
+    else if (lenone > 0) {
+        for(i=1; i<length(longest)+1; i++) {
+            print longest[i]
+        }
+    }
+}' | cut -f1-5 | sed 's/\.[0-9]*\t/\t/g'
