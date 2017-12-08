@@ -1,6 +1,7 @@
 #!bin/bash
 #==============================================================================
-#description:   Generate bed file with exons for canonical transcripts.
+#description:   Generate bed file with exons for canonical transcripts of 
+#               protein coding genes. 
 #               INPUT: gtf formatted file (either file or stdin)
 #               OUTPUT: bed file witch 4th column with ENSEMBL transcript ID 
 #                       and 5th column with gene name. 
@@ -28,71 +29,67 @@ cat $INPUT|
 }
 
 {
-    if (gene==$5 && t1==$4) {
-        #add exons to transcript length
-        longest[length(longest)+1] = $0;
-        lenone+=$3-$2
-    }
-    else if (gene==$5 && t1!=$4) {
-        if (t2!=$4) {
-            #print t1, typelong, lenone, t2, typesec, lensecond
-            if ((lensecond > lenone > 0 && typelong != "protein_coding") || (lensecond > lenone > 0 && typelong == typesec) || (typelong != "protein_coding" && typesec == "protein_coding")) {
-                #if have two transcript and encountered third, decide which stays as the longest: protein_coding one or the longest one if both or neither are protein_coding
-                delete longest
-                t1=t2
-                typelong=typesec
-                lenone=lensecond
+    if ($6 == "protein_coding") {
+         if (gene==$5 && t1==$4) {
+            #add exons to transcript length
+            longest[length(longest)+1] = $0;
+            lenone+=$3-$2
+        }
+        else if (gene==$5 && t1!=$4) {
+            if (t2!=$4) {
+                if (lensecond > lenone > 0) {
+                    #if have two transcript and encountered third, decide which stays as the longest ==> longer
+                    delete longest
+                    t1=t2
+                    lenone=lensecond
+                    for(i=1; i<length(second)+1; i++){
+                        longest[i]=second[i]
+                    }
+                }
+                delete second;
+                second[1]=$0;
+                lensecond=$3-$2
+                t2=$4
+            }
+
+            else if (t2==$4) {
+                if (lensecond==0) {
+                    second[1]=$0;
+                }
+                else {
+                    second[length(second)+1] = $0;
+                }
+                lensecond+=$3-$2
+            }
+            
+        }
+        else {
+            if (lensecond > lenone > 0) {
+                #if have two transcript and moved to another gene, check which and keep the longest
                 for(i=1; i<length(second)+1; i++){
-                    longest[i]=second[i]
+                    print second[i]
                 }
             }
+            else if (lenone > 0) {
+                for(i=1; i<length(longest)+1; i++) {
+                    print longest[i]
+                }
+            }
+            gene=$5;
+            t1=$4;
+            t2="";
+            delete longest;
             delete second;
-            second[1]=$0;
-            lensecond=$3-$2
-            t2=$4
-            typesec=$6
+            lensecond=0;
+            longest[1]=$0;
+            lenone=$3-$2;
         }
-
-        else if (t2==$4) {
-            if (lensecond==0) {
-                second[1]=$0;
-                typesec=$6
-            }
-            else {
-                second[length(second)+1] = $0;
-            }
-            lensecond+=$3-$2
-        }
-        
-    }
-    else {
-        if ((lensecond > lenone > 0 && typelong != "protein_coding") || (lensecond > lenone > 0 && typelong == typesec) || (typelong != "protein_coding" && typesec == "protein_coding")) {
-            #if have two transcript and moved to another gene, decide which stays as the longest: protein_coding one or the longest one if both or neither are protein_coding
-            for(i=1; i<length(second)+1; i++){
-                print second[i]
-            }
-        }
-        else if (lenone > 0) {
-            for(i=1; i<length(longest)+1; i++) {
-                print longest[i]
-            }
-        }
-        gene=$5;
-        t1=$4;
-        t2="";
-        delete longest;
-        delete second;
-        lensecond=0;
-        longest[1]=$0;
-        lenone=$3-$2;
-        typelong=$6;
-        typesec="";
     }
 }
 
 END {
-    if ((lensecond > lenone > 0 && typelong != "protein_coding") || (lensecond > lenone > 0 && typelong == typesec) || (typelong != "protein_coding" && typesec == "protein_coding")) {
-        #if have two transcript and moved to the end of a gene, decide which stays as the longest: protein_coding one or the longest one if both or neither are protein_coding
+    if (lensecond > lenone > 0) {
+        #if have two transcript and moved to the end of a gene, check which and keep the longest
         for(i=1; i<length(second)+1; i++){
             print second[i]
         }
