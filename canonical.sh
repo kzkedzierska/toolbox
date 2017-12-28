@@ -10,6 +10,11 @@
 #               read from stdin)
 #==============================================================================
 
+#=======
+#TODO:
+#* add option for outputing transcripts or transcript-cds instead of exon-cds.
+#=======
+
 if [[ "X$1" == "X" ]]; then
     INPUT=/dev/stdin
 else
