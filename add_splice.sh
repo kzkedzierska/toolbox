@@ -14,7 +14,7 @@ else
 fi
 
 cat $INPUT | 
-	sort -k1,1 -k2,2n | awk -v OFS="\t" \
+  sort -k1,1 -k2,2n | awk -v OFS="\t" \
 '{if ($4 == transcript) {
   if (count > 1) {
     print chrom, start-8, end+8, transcript, gene
