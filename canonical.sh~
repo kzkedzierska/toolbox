@@ -2,18 +2,13 @@
 #==============================================================================
 #description:   Generate bed file with CDS of exons for canonical transcripts. 
 #               INPUT: gtf formatted file (either file or stdin)
-#               OUTPUT: bed file which 4th column is populated with ENSEMBL
-#               transcript ID and 5th column with gene name. 
+#               OUTPUT: bed file witch 4th column with ENSEMBL transcript ID 
+#                       and 5th column with gene name. 
 #author:        Katarzyna Kedzierska
 #date:          December 6th, 2017
 #usage:         bash canonical.sh INPUT or to be used in a pipeline (== can 
 #               read from stdin)
 #==============================================================================
-
-#=======
-#TODO:
-#* add option for outputting transcripts or transcript-cds instead of exon-cds.
-#=======
 
 if [[ "X$1" == "X" ]]; then
     INPUT=/dev/stdin
@@ -21,9 +16,10 @@ else
     INPUT=$1
 fi
 
-: 'Hierarchy: longest CCDS protein_coding > longest protein_coding > longest CCDS > longest transcript'
+: ' Hierarchy: longest CCDS protein_coding > longest protein_coding > longest CCDS > longest transcript
+'
 
-cat $INPUT |
+cat $INPUT|
     awk \
 'BEGIN {
     OFS=FS="\t"
@@ -115,7 +111,3 @@ END {
         }
     }
 }' | cut -f1-5 | sed 's/\.[0-9]*\t/\t/g'
-
-
-#to get one line per cds from start to end:
-#awk -v OFS="\t" '{if($4!=trans) {if(chr!=""){print chr, start, end, trans, gene}; chr=$1; start=$2; end=$3; trans=$4; gene=$5} else{if($3>end)end=$3}} END {print chr, start, end, trans, gene}'
