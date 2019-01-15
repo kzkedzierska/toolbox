@@ -1,4 +1,14 @@
 #!/bin/bash
+#==============================================================================
+#description:   Helps submit a job to the SGE queue sytem
+#author:        Katarzyna Kedzierska
+#date:          January 15, 2019
+#place:         Oxford, UK
+#usage:         submit_job [-ds] [-l ERRMSG_PATH] [-w WD] [-o OUT_PATH] 
+#               [-n JOBNAME] [-t CORES] SCRIPT_PATH
+#==============================================================================
+
+
 DATE="$(date +%y%m%d)"
 PROGRAM="$(basename $0)"
 error() 
@@ -10,7 +20,7 @@ error()
 usage()
 {
   echo -e " 
-bash $PROGRAM [-ds] [-l ERRMSG_PATH] [-w WD] [-o OUT_PATH] [-n JOBNAME] [-t CORES] SCRIPT_PATH
+$PROGRAM [-ds] [-l ERRMSG_PATH] [-w WD] [-o OUT_PATH] [-n JOBNAME] [-t CORES] SCRIPT_PATH
 
 Sumbit job to the cluster with defined options and command in SCRIPT_PATH to execute. 
 
@@ -36,7 +46,7 @@ usage_and_exit()
 
 # Initialize variables
 # user-specific
-TEMPLATE=./qsub_helpers/qsub_job_template.sh
+TEMPLATE=./qsub_job_template.sh # needs to be changed to static path (to where the scripts are stored) TODO: write config file
 ERRMSG_PATH=~/logs/
 OUT_PATH=~/jobs/
 # generic

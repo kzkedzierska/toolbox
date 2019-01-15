@@ -1,0 +1,7 @@
+the script is far from done, but if it helps you in any way that's awesome!
+
+# to test run the following
+
+bash submit_job.sh -s -n test -o ./ dummy_test.sh
+
+
