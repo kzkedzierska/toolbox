@@ -1,5 +1,6 @@
 # I run this script with the following commad:
-# tail -n+51 cellosaurus.txt | tr -s ' ' | sed 's/ /\t/g' | awk -v FS="\t" -f cellosaurus_txt_to_tsv.awk  > /mnt/rotation2/endo/data/cellosaurus.tsv
+# tail -n+51 cellosaurus.txt | tr -s ' ' | sed 's/ /\t/' | awk -v FS="\t" -f cellosaurus_txt_to_tsv.awk  > /mnt/rotation2/endo/data/cellosaurus.tsv
+# important to only change first space to tab! Otherwise only part of the content will be carried out to the table (check CC with microsatelite)
 # This won't obviosly work if there are changes to the cellosaurus.txt since those things below are hardcoded. 
 
 #tail -n+31 cellosaurus.txt | head -n 16 | tr -s ' '| cut -f2 -d' ' | awk '{print "arr[\""$0"\"]="NR";"}'
@@ -29,8 +30,11 @@ BEGIN {
 	if (code==$1) {
 		cont=cont";"$2
 	} else {
-		if(code=="ID") {
+		if (code=="ID") {
 			nrow++
+		}
+		if (code =="CC") {
+			print cont;
 		}
 		row[nrow][arr[code]]=cont; 
 		cont=$2; 
