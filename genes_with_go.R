@@ -23,7 +23,8 @@ gos <- args
 ensembl <- useMart("ensembl",
                   dataset = "hsapiens_gene_ensembl") 
 
-atrs <- c("hgnc_symbol", "go_id", "name_1006")
+atrs <- c("ensembl_gene_id", "external_gene_name", 
+          "hgnc_symbol", "description", "go_id", "name_1006")
 atrs_in_mart <- atrs %in% listAttributes(mart = ensembl)$name
 
 if(!all(atrs_in_mart)) {
@@ -37,6 +38,7 @@ if(!all(fltrs_in_mart)) {
   stop(paste0("Following filters not found in mart: ", 
               paste(fltrs[!fltrs_in_mart], collapse = ", ")))
 }
+
 
 genes <- getBM(attributes = atrs, 
                filters = fltrs, 
