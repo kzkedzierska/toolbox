@@ -98,12 +98,8 @@ fi
 
 create_reservation() {
   local attempt=1
-
-  while [ $attempt -le $MAX_RETRIES ]; do
-    echo "Attempt $attempt of $MAX_RETRIES to create capacity reservation using profile: $AWS_PROFILE..."
-
-    # Build the AWS CLI command dynamically
-    CMD="aws ec2 create-capacity-reservation \
+  # Build the AWS CLI command dynamically
+  CMD="aws ec2 create-capacity-reservation \
             --profile \"$AWS_PROFILE\" \
             --instance-type \"$INSTANCE_TYPE\" \
             --instance-platform \"$INSTANCE_PLATFORM\" \
@@ -112,15 +108,18 @@ create_reservation() {
             --instance-match-criteria \"open\" \
             --tenancy \"$TENANCY\""
 
-    # Add end date parameters if specified
-    if [ "$AUTOMATED_END_DATE" = true ]; then
-      CMD="$CMD --end-date-type \"limited\" --end-date \"$END_DATE\""
-    else
-      CMD="$CMD --end-date-type \"unlimited\""
-    fi
+  # Add end date parameters if specified
+  if [ "$AUTOMATED_END_DATE" = true ]; then
+    CMD="$CMD --end-date-type \"limited\" --end-date \"$END_DATE\""
+  else
+    CMD="$CMD --end-date-type \"unlimited\""
+  fi
 
-    # Add EBS optimization
-    CMD="$CMD --ebs-optimized"
+  # Add EBS optimization
+  CMD="$CMD --ebs-optimized"
+
+  while [ $attempt -le $MAX_RETRIES ]; do
+    echo "Attempt $attempt of $MAX_RETRIES to create capacity reservation using profile: $AWS_PROFILE..."
 
     # Execute the command
     RESPONSE=$(eval "$CMD" 2>&1)
