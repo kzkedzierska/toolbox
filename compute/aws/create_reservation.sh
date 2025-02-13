@@ -9,6 +9,7 @@ INSTANCE_PLATFORM="Linux/UNIX"
 INSTANCE_COUNT=1
 AUTOMATED_END_DATE=false
 END_DATE=
+TENANCY="default"
 
 # Default AWS profile
 AWS_PROFILE="default"
@@ -38,7 +39,7 @@ while [[ $# -gt 0 ]]; do
     AWS_PROFILE="$2"
     shift 2
     ;;
-  -t | --instance-type)
+  --instance-type)
     INSTANCE_TYPE="$2"
     shift 2
     ;;
@@ -46,7 +47,7 @@ while [[ $# -gt 0 ]]; do
     AVAILABILITY_ZONE="$2"
     shift 2
     ;;
-  -i | --instance-platform)
+  --instance-platform)
     INSTANCE_PLATFORM="$2"
     shift 2
     ;;
@@ -60,6 +61,10 @@ while [[ $# -gt 0 ]]; do
     ;;
   -m | --max-retries)
     MAX_RETRIES="$2"
+    shift 2
+    ;;
+  -t | --tenancy)
+    TENANCY="$2"
     shift 2
     ;;
   -d | --days)
@@ -79,6 +84,18 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# check if tenancy is valid
+if [[ "$TENANCY" != "default" && "$TENANCY" != "dedicated" ]]; then
+  echo "Invalid tenancy option. Use 'default' or 'dedicated'."
+  exit 1
+fi
+
+# check if instance count is valid
+if ! [[ "$INSTANCE_COUNT" =~ ^[0-9]+$ ]]; then
+  echo "Invalid instance count. Must be a positive integer."
+  exit 1
+fi
+
 create_reservation() {
   local attempt=1
 
@@ -92,7 +109,8 @@ create_reservation() {
             --instance-platform \"$INSTANCE_PLATFORM\" \
             --availability-zone \"$AVAILABILITY_ZONE\" \
             --instance-count $INSTANCE_COUNT \
-            --instance-match-criteria \"open\""
+            --instance-match-criteria \"open\" \
+            --tenancy \"$TENANCY\""
 
     # Add end date parameters if specified
     if [ "$AUTOMATED_END_DATE" = true ]; then
